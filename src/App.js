@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
 import 'antd/dist/antd.css'
-import Main from './main'
+import Main from './Main'
 
 function App() {
   return (

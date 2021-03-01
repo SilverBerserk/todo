@@ -1,45 +1,35 @@
 import React, { useState } from 'react'
-import { Input, Button, Popover, Radio, Row, Col, Tag, AutoComplete } from 'antd'
-import { PlusOutlined } from '@ant-design/icons';
+import { Input, Button, Popover, Radio, Row, Col, Tag, Empty } from 'antd'
+import { PlusOutlined, EditOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons';
 
-const { Search } = Input;
+import Tags from './Tags'
 
 const Main = () => {
 
+    const list = [
+        { id: 1, text: 'do this', edit: false, done: false, tagInput: false, tags: [] },
+        { id: 2, text: 'do that', edit: false, done: false, tagInput: false, tags: [] }]
 
-
-    const options = [
-        { value: 'tag1', label: 'Light' },
-        { value: 'tag2', label: 'Bamboo' },
-    ];
-    // const options = ['tag1', 'tag2', 'others tags']
-
-
-    const list = [{ id: '1', text: 'do this', edit: false, done: false, tagInput: false, tags: [] }, { id: '2', text: 'do that', edit: false, done: false, tagInput: false, tags: [] }]
     const [todoList, setList] = useState(list)
     const [text, setText] = useState()
-    // const [visible, setVisible] = useState(false)
     const [doneList, setDoneList] = useState(false)
-    // const [showInput, setShowInput] = useState(false)
     const [newTag, setNewTag] = useState({ id: -1, text: '' })
 
     const onAdd = (item) => {
         if (item !== '') {
             const newList = todoList
-            const newId = Math.max.apply(null, todoList.map(el => el.id)) + 1
-            console.log(newList)
+            const newId = todoList.length > 0 ? Math.max.apply(null, todoList.map(el => el.id)) + 1 : 0
             setList([...newList, { id: newId, text: item, edit: false, done: false }])
+            console.log(todoList)
         }
     }
 
     const onEditVisible = (id) => {
         const newList = todoList
         const idx = todoList.findIndex(el => el.id === id)
-        newList[idx].edit = true;
-        console.log(newList)
+        newList[idx].edit = !newList[idx].edit;
         setList([...newList])
-
-
+        console.log(todoList)
     }
 
     const onEdit = (id) => {
@@ -47,8 +37,8 @@ const Main = () => {
         const idx = todoList.findIndex(el => el.id === id)
         newList[idx].edit = false;
         newList[idx].text = text
-        console.log(newList)
         setList([...newList])
+        console.log(todoList)
     }
 
     const onChange = (text) => {
@@ -67,7 +57,7 @@ const Main = () => {
     const onDone = (id) => {
         const newList = todoList
         const idx = todoList.findIndex(el => el.id === id)
-        newList[idx].done = true;
+        newList[idx].done = !newList[idx].done;
         console.log(newList)
         setList([...newList])
     }
@@ -88,12 +78,9 @@ const Main = () => {
     const addNewTag = (e, id) => {
         console.log(e, id)
         const newList = todoList
-        // const newId = Math.max.apply(null, todoList[idx].tags.map(el => el.id)) + 1
         const idx = todoList.findIndex(el => el.id === id)
         newList[idx].tags = [...newList[idx].tags, <Tag >{e}</Tag>];
-        // console.log(newList)
         setList([...newList])
-        // setTag
         tagInput(id, false)
     }
 
@@ -114,67 +101,61 @@ const Main = () => {
 
     return (
         <React.Fragment >
-            <Col style={{ padding: '20px', maxWidth: '400px' }} >
-                <Row>
-                    <Radio.Group onChange={handleSizeChange} style={{ width:'400px' }}>
-                        <Radio.Button value={true}>Done</Radio.Button>
-                        <Radio.Button value={false}>NotDone</Radio.Button>
+            <Col style={{ border: '2px solid silver', padding: '10px', maxWidth: '400px', }} >
+                <Row className='header'>
+                    <Radio.Group value={doneList} onChange={handleSizeChange} style={{ width: '400px', marginBottom: '20px' }}>
+                        <Radio.Button value={false} style={{ width: '50%' }}>NotDone</Radio.Button>
+                        <Radio.Button value={true} style={{ width: '50%' }}>Done</Radio.Button>
                     </Radio.Group>
                 </Row>
-                <Row>
-                    <Col>
-                        <Row>
-                            {!doneList ? todoList.filter(e => e.done === doneList).map(el =>
-                                el.edit === false ?
-                                    <span key={el.id}>
-                                        {el.tags}
-                                        {el.tagInput ?
-                                            // <Input onChange={e => tagNameChange(e, el.id)}
-                                            //     onPressEnter={e => addNewTag(e, el.id)
-                                            //     }></Input> :
-
-                                            <AutoComplete
-                                                // value={value}
-                                                options={options}
-                                                style={{ width: 200 }}
-                                                onSelect={e => addNewTag(e, el.id)}
-                                                // on
-                                                // onPressEnter={e => addNewTag(e, el.id)}
-                                                // onSearch={e => addNewTag(e, el.id)}
-                                                // on={e => addNewTag(e, el.id)}
-                                                onChange={defUse}
-
-                                                placeholder="control mode"
-                                            ><Search onPressEnter={e => addNewTag2(e, el.id)} onSearch={e => addNewTag(e, el.id)}></Search></AutoComplete> :
-                                            < Tag className="site-tag-plus" onClick={() => tagInput(el.id, true)}>
-                                                <PlusOutlined /> New Tag
-                                            </Tag>}
-
-                                        <li onClick={() => onDone(el.id)}>
-
-                                            {el.text}
-                                        </li>
-                                        <Button onClick={() => onEditVisible(el.id)}>edit</Button>
-                                        <Button onClick={() => onDelete(el.id)}>delete</Button>
-
-                                    </span>
-                                    :
-                                    <span key={el.id}>
-                                        <Input placeholder={el.text} onChange={onChange} />
-                                        <Button onClick={() => onEdit(el.id)}>edit</Button>
-                                        <Button onClick={() => onDelete(el.id)}>delete</Button>
-                                    </span>)
-                                :
+                {!doneList &&
+                    <Row className='inputTodo'>
+                        <Input.Search onSearch={onAdd} enterButton={<PlusOutlined />} style={{ marginBottom: '20px' }} />
+                    </Row>}
+                <Row className='todoItems'>
+                    <Col style={{ width: '100%' }}>
+                        {!doneList ?
+                            !todoList.filter(e => e.done === doneList).length ?
+                                <Empty /> :
                                 todoList.filter(e => e.done === doneList).map(el =>
-                                    <li key={el.id} >{el.text}</li>
+                                    // border: '1px solid blue',
+                                    <Row style={{ marginBottom: '5px', }} key={el.id}>
+                                        <Col style={{ width: '100%', alignContent: 'right' }}>
+                                            {el.edit === false ?
+                                                <Row style={{ width: '100%', alignSelf: 'right' }}>
+                                                    <Col onClick={() => onDone(el.id)} style={{ width: '75%', textAlign: 'center' }}>
+                                                        <Button style={{ width: '100%' }}>{el.text}</Button>
+                                                    </Col>
+                                                    <Col style={{ width: '25%' }}>
+                                                        <Button onClick={() => onEditVisible(el.id)}><EditOutlined /></Button>
+                                                        <Button onClick={() => onDelete(el.id)}><CloseOutlined /></Button>
+                                                    </Col>
+                                                </Row> :
+                                                <Row style={{ width: '100%', alignSelf: 'right' }}>
+                                                    <Col style={{ width: '75%' }}>
+                                                        <Input placeholder={el.text} defaultValue={el.text} onChange={onChange} />
+                                                    </Col>
+                                                    <Col style={{ width: '25%' }}>
+                                                        <Button onClick={() => onEdit(el.id)}><CheckOutlined /></Button>
+                                                        <Button onClick={() => onEditVisible(el.id)}><CloseOutlined /></Button>
+                                                    </Col>
+                                                </Row>}
+                                            <Tags el={el} addNewTag={addNewTag} addNewTag2={addNewTag2} defUse={defUse} tagInput={tagInput} />
+                                        </Col>
+                                    </Row>
                                 )
-                            }
-                        </Row>
+                            :
+                            !todoList.filter(e => e.done === doneList).length ?
+                                <Empty /> :
+                                todoList.filter(e => e.done === doneList).map(el =>
+                                    <Row onClick={() => onDone(el.id)} style={{ width: '100%', textAlign: 'center', marginBottom: '3px' }}>
+                                        <Button style={{ width: '100%' }}>{el.text}</Button>
+                                    </Row>)
+                        }
+
                     </Col>
                 </Row>
-                <Row>
-                    <Search onSearch={onAdd} />
-                </Row>
+
             </Col>
         </React.Fragment >
     )
